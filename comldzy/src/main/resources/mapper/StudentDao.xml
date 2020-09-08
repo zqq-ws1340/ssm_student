@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.student.core.dao.StudentDao">
+    <sql id="selectStudentListWhere">
+        <where>
+            <if test="student_name !=null">
+                student_name like "%"#{student_name}"%"
+            </if>
+            <if test="course_name!=null">
+              and  course_name=#{course_name}
+            </if>
+
+        </where>
+    </sql>
+    <select id="selectStudentList" parameterType="student" resultType="student">
+        SELECT
+        id,
+        stundent_no,
+        b.student_name student_name,
+        c.course_name course_name,
+        ordinary_scores,
+        end_scores,
+        total_scores
+        FROM t_student_scores a
+        LEFT JOIN(SELECT student_no , student_name FROM t_student_info)b ON a.stundent_no=b.student_no
+        LEFT JOIN(SELECT course_no , course_name FROM t_course_info )c ON c.course_no=a.course_no
+        <include refid="selectStudentListWhere"/>
+        <!--执行分页查询-->
+        <if test="start !=null and rows !=null">
+            limit #{start},#{rows}
+        </if>
+    </select>
+    <!--查询学生总数-->
+   <select id="selectStudentListCount" parameterType="student" resultType="Integer">
+       select count(*) from t_student_scores
+
+   </select>
+
+    <!--添加学生信息-->
+    <insert id="createStudent" parameterType="student">
+        insert into t_student_scores(
+        id,
+        stundent_no,
+        course_no,
+        ordinary_scores,
+        end_scores,
+        total_scores
+        )
+        value (
+        #{id},
+        #{stundent_no},
+        #{course_no},
+        #{ordinary_scores},
+        #{end_scores},
+        #{total_scores}
+        )
+    </insert>
+    <!--根据id获取学生信息-->
+    <select id="getStudentById" parameterType="Integer" resultType="student">
+        select  * from t_student_scores where id=#{id}
+    </select>
+    <!--更新学生信息-->
+    <update id="updateStudent" parameterType="student">
+        update t_student_scores
+        <set>
+            <if test="stundent_no!=null">
+                stundent_no=#{stundent_no},
+            </if>
+            <if test="course_no!=null">
+                course_no=#{course_no},
+            </if>
+            <if test="ordinary_scores!=null">
+                ordinary_scores=#{ordinary_scores},
+            </if>
+            <if test="end_scores!=null">
+                end_scores=#{end_scores},
+            </if>
+            <if test="total_scores!=null">
+                total_scores=#{total_scores}
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+    <!--删除学生信息操作-->
+    <delete id="deleteStudent" parameterType="Integer">
+        delete from t_student_scores where id=#{id}
+    </delete>
+</mapper>
